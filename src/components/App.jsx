@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import { nanoid } from 'nanoid';
 
 import css from './App.module.css';
 import ContactList from './ContactList/ContactList';
@@ -15,40 +14,29 @@ export class App extends Component {
       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
     ],
     filter: '',
-    name: '',
-    number: '',
   };
 
-  handleChange = evt => {
-    const { name, value } = evt.target;
-    this.setState({ [name]: value.trim() });
-  };
-
-  handleSubmit = evt => {
-    evt.preventDefault();
-
-    const { name, contacts } = this.state;
-    const findExistingContact = contacts.find(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
+  addContact = newContact => {
+    const { contacts } = this.state;
+    const existingContact = contacts.find(
+      contact =>
+        contact.name.toLowerCase() === newContact.name.toLowerCase() ||
+        contact.number === newContact.number
     );
 
-    if (findExistingContact) {
-      alert('Contact already exists!');
-      return;
+    if (existingContact) {
+      alert(`${existingContact.name} is already in contacts`);
+    } else {
+      this.setState(prevState => ({
+        contacts: [...prevState.contacts, newContact],
+      }));
     }
-
-    const newContact = {
-      name,
-      number: this.state.number,
-      id: nanoid(),
-    };
-
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-      name: '',
-      number: '',
-    }));
   };
+  handleChange = evt => {
+    const { name, value } = evt.target;
+    this.setState({ [name]: value });
+  };
+
   handleDelete = id => {
     const { contacts } = this.state;
     const updatedContacts = contacts.filter(contact => contact.id !== id);
@@ -56,7 +44,7 @@ export class App extends Component {
   };
 
   render() {
-    const { name, contacts, number, filter } = this.state;
+    const { contacts, filter } = this.state;
     const filteredContacts = contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );
@@ -64,12 +52,8 @@ export class App extends Component {
     return (
       <div className={css.app}>
         <h1>Phonebook</h1>
-        <ContactForm
-          name={name}
-          number={number}
-          handleSubmit={this.handleSubmit}
-          handleChange={this.handleChange}
-        />
+        <ContactForm addContact={this.addContact} />
+
         <h2>Contacts</h2>
         <Filter filter={filter} handleChange={this.handleChange} />
         <ContactList
